@@ -171,46 +171,6 @@ concept Atomic128 = requires {
 
 ---
 
-## Comparison with Boost.Lockfree
-
-[Boost.Lockfree](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html) is
-the de-facto standard lock-free data structure library in C++. Both this
-implementation and Boost.Lockfree share the same foundational techniques:
-
-| Aspect | This implementation | Boost.Lockfree |
-|--------|-------------------|----------------|
-| **Stack algorithm** | Treiber stack (CAS on head pointer) | Treiber stack |
-| **Free-list** | Fixed-size array pool, lock-free CAS on head index | Node-based pool, lock-free CAS on head pointer |
-| **ABA prevention** | `TaggedIndex` (32+32 bit) / `TaggedPtr` (64+64 bit) | `tagged_ptr` (pointer + integer tag) |
-| **Capacity** | Compile-time fixed (`Capacity` template parameter) | Configurable via `boost::lockfree::capacity<>` or dynamic |
-| **Allocation** | Pre-allocated array, no heap after construction | Free-list with optional dynamic allocation fallback |
-| **128-bit CAS** | `alignas(16)` + `std::atomic<TaggedPtr>` → `cmpxchg16b` | Platform-adaptive: pointer packing on x86-64, 16-bit index on 32-bit |
-| **Wait-free** | No | `spsc_queue` is wait-free; stack and queue are lock-free |
-| **Queue** | Not implemented | `boost::lockfree::queue` (Michael-Scott) |
-
-### Design differences
-
-**Memory model.** Boost.Lockfree's free-list is a linked list of dynamically
-allocated nodes. This allows unbounded growth but introduces a blocking path
-when the operating system allocator is called. Our `FreeList` pre-allocates a
-contiguous array at construction time — no heap allocation occurs after that,
-making it suitable for real-time or embedded environments where allocation is
-prohibited.
-
-**ABA prevention on 32-bit.** Boost.Lockfree handles platforms without
-double-width CAS by exploiting unused address bits (e.g., 48-bit address space
-on x86-64 leaves 16 bits for a tag), or by using 16-bit indices into a
-fixed-size array when `fixed_sized` is configured. Our implementation takes the
-latter approach universally for `FreeList` (`TaggedIndex`) and requires
-`alignas(16)` + `cmpxchg16b` for the stack's `TaggedPtr`.
-
-**No hazard pointers / RCU.** Neither implementation uses hazard pointers or
-epoch-based reclamation. Boost.Lockfree simply never returns memory to the OS;
-this implementation uses a static pool. Both avoid the classic lock-free memory
-reclamation problem by design.
-
----
-
 ## Benchmark Results
 
 ### Methodology
@@ -294,3 +254,20 @@ LockFree (blue) vs Mutex (red) side by side per thread count.*
 4. **Type size has minimal impact.** Throughput is largely independent of whether
    the payload is 4 bytes or 256 bytes — the bottleneck is the CAS/tag overhead,
    not the data copy.
+
+---
+
+## References
+
+1. R. K. Treiber. *Systems Programming: Coping with Parallelism.* IBM
+   Almaden Research Center, 1986. — the original Treiber stack.
+2. M. M. Michael and M. L. Scott. *Simple, Fast, and Practical Non-Blocking
+   and Blocking Concurrent Queue Algorithms.* PODC 1996. — Michael-Scott
+   queue (foundation of lock-free queues).
+3. M. Herlihy and N. Shavit. *The Art of Multiprocessor Programming.* Morgan
+   Kaufmann, 2nd edition, 2020. — comprehensive textbook on lock-free data
+   structures.
+4. J. D. Valois. *Lock-Free Data Structures.* Rensselaer Polytechnic Institute,
+   1995. — early work on lock-free free-list allocators.
+5. Boost.Lockfree. [https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html)
+   — Tim Blechmann's implementation of lock-free stack, queue, and SPSC queue.
