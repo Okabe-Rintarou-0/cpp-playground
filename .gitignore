@@ -43,9 +43,9 @@ venv/
 
 # Output
 bench_results.csv
-lock_free/figures/*.pdf
-lock_free/figures/*.png
 
 # OS
 Thumbs.db
 .DS_Store
+
+build/
