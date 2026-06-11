@@ -250,15 +250,6 @@ LockFree (blue) vs Mutex (red) side by side per thread count.*
 
 ## References
 
-1. R. K. Treiber. *Systems Programming: Coping with Parallelism.* IBM
-   Almaden Research Center, 1986. — the original Treiber stack.
-2. M. M. Michael and M. L. Scott. *Simple, Fast, and Practical Non-Blocking
-   and Blocking Concurrent Queue Algorithms.* PODC 1996. — Michael-Scott
-   queue (foundation of lock-free queues).
-3. M. Herlihy and N. Shavit. *The Art of Multiprocessor Programming.* Morgan
-   Kaufmann, 2nd edition, 2020. — comprehensive textbook on lock-free data
-   structures.
-4. J. D. Valois. *Lock-Free Data Structures.* Rensselaer Polytechnic Institute,
-   1995. — early work on lock-free free-list allocators.
-5. Boost.Lockfree. [https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html)
-   — Tim Blechmann's implementation of lock-free stack, queue, and SPSC queue.
+- Boost.Lockfree — Tim Blechmann's implementation of lock-free stack, queue,
+  and SPSC queue.
+  [https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html](https://www.boost.org/doc/libs/1_87_0/doc/html/lockfree.html)
