@@ -160,15 +160,6 @@ free_list.deallocate(old_head.get_ptr())
 `std::atomic<TaggedPtr<Node>>` uses `cmpxchg16b` on x86-64, performing a single,
 atomic 128-bit CAS. This ensures the pointer and tag are updated atomically together.
 
-The `Atomic128` C++20 concept enforces:
-```cpp
-template <typename T>
-concept Atomic128 = requires {
-    requires sizeof(T) == 16;
-    requires alignof(T) == 16;
-};
-```
-
 ---
 
 ## Benchmark Results
