@@ -1,3 +1,7 @@
+# Cache
+.cache/
+.cmake/
+
 # Build artifacts
 build/
 *.obj
